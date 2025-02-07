@@ -1,4 +1,8 @@
 class User < ApplicationRecord
+  has_many :projects
+  has_many :tasks
+  has_many :comments
+
   enum role: { user: 0, admin: 1 }
 
   validates :name, length: { minimum: 2 }
