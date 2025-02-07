@@ -1,7 +1,6 @@
 class Task < ApplicationRecord
   belongs_to :user
   belongs_to :project
-
   has_many :comments
 
   enum status: { pending: 0, active: 1, completed: 2 }
