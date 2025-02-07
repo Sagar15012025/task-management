@@ -1,4 +1,7 @@
 class Task < ApplicationRecord
+  belongs_to :user
+  belongs_to :project
+
   enum status: { pending: 0, active: 1, completed: 2 }
 
   validates :status, presence: true, inclusion: { in: %w[pending active completed], message: "%{value} is not a valid status" }
