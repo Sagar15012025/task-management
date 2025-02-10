@@ -3,7 +3,7 @@ class Task < ApplicationRecord
   belongs_to :project
   has_many :comments
 
-  enum status: { pending: 0, active: 1, completed: 2 }
+  enum :current_status, [ :pending, :active, :completed ], default: :pending
 
   validates :status, presence: true, inclusion: { in: %w[pending active completed], message: "%{value} is not a valid status" }
   validates :title, length: { minimum: 2 }

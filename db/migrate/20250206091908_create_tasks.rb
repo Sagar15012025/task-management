@@ -6,7 +6,7 @@ class CreateTasks < ActiveRecord::Migration[8.0]
       t.integer :status
       t.datetime :due_date
       t.references :project, null: true, foreign_key: { on_delete: :restrict }
-      t.references :user, null: true, foreign_key: { on_delete: :restrict }
+      t.references :assignee, null: true, foreign_key: { to_table: :users, on_delete: :restrict }
 
       t.timestamps
     end

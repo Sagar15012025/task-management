@@ -3,8 +3,8 @@ class CreateProjects < ActiveRecord::Migration[8.0]
     create_table :projects do |t|
       t.string :name
       t.string :description
-      t.integer :status
-      t.references :user, null: true, foreign_key: { on_delete: :restrict }
+      t.integer :current_status
+      t.references :assignee, null: true, foreign_key: { to_table: :users, on_delete: :restrict }
 
       t.timestamps
     end

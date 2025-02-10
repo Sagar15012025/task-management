@@ -24,11 +24,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_06_091924) do
   create_table "projects", charset: "utf8mb3", force: :cascade do |t|
     t.string "name"
     t.string "description"
-    t.integer "status"
-    t.bigint "user_id"
+    t.integer "current_status"
+    t.bigint "assignee_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_projects_on_user_id"
+    t.index ["assignee_id"], name: "index_projects_on_assignee_id"
   end
 
   create_table "tasks", charset: "utf8mb3", force: :cascade do |t|
@@ -37,18 +37,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_06_091924) do
     t.integer "status"
     t.datetime "due_date"
     t.bigint "project_id"
-    t.bigint "user_id"
+    t.bigint "assignee_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["project_id"], name: "index_tasks_on_project_id"
-    t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
   create_table "users", charset: "utf8mb3", force: :cascade do |t|
     t.string "name"
     t.string "email"
     t.string "password"
-    t.integer "role"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -56,7 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_06_091924) do
 
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
-  add_foreign_key "projects", "users", on_delete: :nullify
+  add_foreign_key "projects", "users", column: "assignee_id"
   add_foreign_key "tasks", "projects"
-  add_foreign_key "tasks", "users"
+  add_foreign_key "tasks", "users", column: "assignee_id"
 end
