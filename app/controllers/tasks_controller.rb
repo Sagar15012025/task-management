@@ -1,11 +1,13 @@
 class TasksController < ActionController::API
+  before_action :set_project, only: [ :create ]
+
   def index
-    tasks = Task.all
+    tasks = Task.where(project_id: params[:project_id])
     render json: tasks
   end
 
   def create
-    task = Task.new(task_params)
+    task = @project.tasks.new(task_params)
     if task.save
       render json: task, status: :created
     else
@@ -50,6 +52,10 @@ class TasksController < ActionController::API
   end
 
   private
+  def set_project
+    @project = Project.find(params[:project_id])
+  end
+
   def task_params
     params.require(:task).permit(:title, :description, :due_date, :project_id, :assignee_id)
   end

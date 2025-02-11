@@ -51,6 +51,6 @@ class CommentsController < ActionController::API
 
   private
   def comment_params
-    params.require(:comment).permit(:title, :description, :due_date, :project_id, :assignee_id)
+    params.require(:comment).permit(:content, :task_id, :user_id)
   end
 end
