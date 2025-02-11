@@ -9,7 +9,7 @@ class UsersController < ActionController::API
     if user.save
       render json: user, status: :created
     else
-      render json: user.errors, status: :unprocessable_entity
+      render json: user.errors.full_messages, status: :unprocessable_entity
     end
   end
 
@@ -25,8 +25,11 @@ class UsersController < ActionController::API
   def update
     user_id = params[:id]
     if user = User.where(id: user_id).first
-      user.update(user_params)
-      render json: user
+      if user.update(user_params)
+        render json: user
+      else
+        render json: user.errors.full_messages, status: :unprocessable_entity
+      end
     else
       render json: { message: "User with ID #{user_id} not found" }, status: :not_found
     end
@@ -36,7 +39,11 @@ class UsersController < ActionController::API
     user_id = params[:id]
     if user = User.where(id: user_id).first
       user.destroy
-      render json: { message: "User with ID #{user_id} deleted" }
+      if user.destroyed?
+        render json: { message: "User with ID #{user_id} deleted" }
+      else
+        render json: { message: "User with ID #{user_id} not deleted" }, status: :internal_server_error
+      end
     else
       render json: { message: "User with ID #{user_id} not found" }, status: :not_found
     end

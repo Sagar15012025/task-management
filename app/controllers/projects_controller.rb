@@ -25,8 +25,11 @@ class ProjectsController < ActionController::API
   def update
     project_id = params[:id]
     if project = Project.where(id: project_id).first
-      project.update(project_params)
-      render json: project
+      if project.update(project_params)
+        render json: project
+      else
+        render json: project.errors.full_messages, status: :unprocessable_entity
+      end
     else
       render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
     end
@@ -36,7 +39,11 @@ class ProjectsController < ActionController::API
     project_id = params[:id]
     if project = Project.where(id: project_id).first
       project.destroy
-      render json: { message: "Project with ID #{project_id} deleted" }
+      if project.destroyed?
+        render json: { message: "Project with ID #{project_id} deleted" }
+      else
+        render json: { message: "Project with ID #{project_id} not deleted" }, status: :internal_server_error
+      end
     else
       render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
     end
