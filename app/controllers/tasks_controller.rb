@@ -1,5 +1,5 @@
 class TasksController < ActionController::API
-  before_action :set_project, only: [ :create ]
+  before_action :set_project, only: [ :create, :update ]
 
   def index
     tasks = Task.where(project_id: params[:project_id])
@@ -17,37 +17,64 @@ class TasksController < ActionController::API
 
   def show
     task_id = params[:id]
-    if task = Task.where(id: task_id).first
-      render json: task
-    else
-      render json: { message: "Task with ID #{task_id} not found" }, status: :not_found
+    project_id = params[:project_id]
+
+    unless Project.exists?(project_id)
+      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      return
     end
+
+    unless Task.exists?(id: task_id, project_id: project_id)
+      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
+      return
+    end
+
+    task = Task.find(task_id)
+    render json: task
   end
 
   def update
     task_id = params[:id]
-    if task = Task.where(id: task_id).first
-      if task.update(task_params)
-        render json: task
-      else
-        render json: task.errors.full_messages, status: :unprocessable_entity
-      end
+    project_id = params[:project_id]
+
+    unless Project.exists?(project_id)
+      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      return
+    end
+
+    unless Task.exists?(id: task_id, project_id: project_id)
+      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
+      return
+    end
+
+    task = Task.where(id: task_id).first
+    if task.update(task_params)
+      render json: task
     else
-      render json: { message: "Task with ID #{task_id} not found" }, status: :not_found
+      render json: task.errors.full_messages, status: :unprocessable_entity
     end
   end
 
   def destroy
     task_id = params[:id]
-    if task = Task.where(id: task_id).first
-      task.destroy
-      if task.destroyed?
-        render json: { message: "Task with ID #{task_id} deleted" }
-      else
-        render json: task.errors.full_messages, status: :internal_server_error
-      end
+    project_id = params[:project_id]
+
+    unless Project.exists?(project_id)
+      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      return
+    end
+
+    unless Task.exists?(id: task_id, project_id: project_id)
+      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
+      return
+    end
+
+    task = Task.where(id: task_id).first
+    task.destroy
+    if task.destroyed?
+      render json: { message: "Task with ID #{task_id} deleted" }
     else
-      render json: { message: "Task with ID #{task_id} not found" }, status: :not_found
+      render json: task.errors.full_messages, status: :internal_server_error
     end
   end
 
