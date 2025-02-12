@@ -15,7 +15,11 @@ class ProjectsController < ActionController::API
 
   def show
     project_id = params[:id]
-    if project = Project.where(id: project_id).first
+    project = Rails.cache.fetch("project_#{project_id}", expires_in: 12.hours) do
+      Project.find(project_id)
+    end
+
+    if project
       render json: project
     else
       render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
@@ -24,8 +28,9 @@ class ProjectsController < ActionController::API
 
   def update
     project_id = params[:id]
-    if project = Project.where(id: project_id).first
+    if project = Project.find(project_id)
       if project.update(project_params)
+        Rails.cache.delete("project_#{project_id}")
         render json: project
       else
         render json: project.errors.full_messages, status: :unprocessable_entity
@@ -37,9 +42,10 @@ class ProjectsController < ActionController::API
 
   def destroy
     project_id = params[:id]
-    if project = Project.where(id: project_id).first
+    if project = Project.find(project_id)
       project.destroy
       if project.destroyed?
+        Rails.cache.delete("project_#{project_id}")
         render json: { message: "Project with ID #{project_id} deleted" }
       else
         render json: { message: "Project with ID #{project_id} not deleted" }, status: :internal_server_error
