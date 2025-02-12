@@ -78,6 +78,36 @@ class TasksController < ActionController::API
     end
   end
 
+  def status
+    project_id = params[:project_id]
+    status = params[:status]
+
+    unless Project.exists?(project_id)
+      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      return
+    end
+
+    unless [ "pending", "active", "completed" ].include?(status)
+      render json: { message: "Invalid status value" }, status: :unprocessable_entity
+      return
+    end
+
+    tasks = Task.where(project_id: project_id, status: status)
+    render json: tasks
+  end
+
+  def overdue
+    project_id = params[:project_id]
+
+    unless Project.exists?(project_id)
+      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      return
+    end
+
+    tasks = Task.where(project_id: project_id).where("due_date < ?", Date.today)
+    render json: tasks
+  end
+
   private
   def set_project
     @project = Project.find(params[:project_id])

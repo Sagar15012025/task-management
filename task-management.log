@@ -1,0 +1,4 @@
+I, [2025-02-12T12:09:21.093684 #54260]  INFO -- : 2025-02-12	2025-02-12 06:39:21 UTC	INFO	Started UsersController#index with params {"controller" => "users", "action" => "index"}
+I, [2025-02-12T12:09:21.132889 #54260]  INFO -- : Completed UsersController#index
+I, [2025-02-12T12:15:55.684401 #54260]  INFO -- : 2025-02-12	2025-02-12 06:45:55 UTC	INFO	Started UsersController#create with params {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123", "controller" => "users", "action" => "create", "user" => {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123"}}
+I, [2025-02-12T12:15:55.752178 #54260]  INFO -- : Completed UsersController#create

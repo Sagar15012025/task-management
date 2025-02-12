@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   resources :users
   resources :projects do
     resources :tasks do
+      collection do
+        get "status/:status", to: "tasks#status"
+        get "overdue/", to: "tasks#overdue"
+      end
       resources :comments, only: [ :create, :update, :destroy ]
     end
   end

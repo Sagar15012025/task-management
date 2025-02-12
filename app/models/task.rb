@@ -1,9 +1,11 @@
 class Task < ApplicationRecord
+  before_save :format_title_and_description
+
   belongs_to :assignee, class_name: "User", foreign_key: "assignee_id"
   belongs_to :project
   has_many :comments
 
-  enum :status, [ :pending, :active, :completed ], default: :pending
+  enum :status, STATUS[:task], default: :pending
 
   validates :status, presence: true, inclusion: { in: %w[pending active completed], message: "%{value} is not a valid status" }
   validates :title, length: { minimum: 2 }
@@ -24,5 +26,10 @@ class Task < ApplicationRecord
     if due_date <= Date.current
       errors.add(:due_date, "must be greater than today")
     end
+  end
+
+  def format_title_and_description
+    self.title = title.humanize.titleize
+    self.description = description.upcase_first
   end
 end
