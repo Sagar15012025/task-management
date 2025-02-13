@@ -2,3 +2,13 @@ I, [2025-02-12T12:09:21.093684 #54260]  INFO -- : 2025-02-12	2025-02-12 06:39:21
 I, [2025-02-12T12:09:21.132889 #54260]  INFO -- : Completed UsersController#index
 I, [2025-02-12T12:15:55.684401 #54260]  INFO -- : 2025-02-12	2025-02-12 06:45:55 UTC	INFO	Started UsersController#create with params {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123", "controller" => "users", "action" => "create", "user" => {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123"}}
 I, [2025-02-12T12:15:55.752178 #54260]  INFO -- : Completed UsersController#create
+I, [2025-02-13T18:18:02.726728 #99178]  INFO -- : 2025-02-13	2025-02-13 12:48:02 UTC	INFO	Started UsersController#create with params {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123", "controller" => "users", "action" => "create", "user" => {"name" => "PC", "email" => "pc@tagalys.com", "password" => "pc@123"}}
+I, [2025-02-13T18:18:02.788538 #99178]  INFO -- : Completed UsersController#create
+I, [2025-02-13T18:18:22.004517 #99178]  INFO -- : 2025-02-13	2025-02-13 12:48:22 UTC	INFO	Started UsersController#create with params {"name" => "Puja", "email" => "puja@tagalys.com", "password" => "puja@123", "controller" => "users", "action" => "create", "user" => {"name" => "Puja", "email" => "puja@tagalys.com", "password" => "puja@123"}}
+I, [2025-02-13T18:18:22.064382 #99178]  INFO -- : Completed UsersController#create
+I, [2025-02-13T18:19:12.163936 #99178]  INFO -- : 2025-02-13	2025-02-13 12:49:12 UTC	INFO	Started UsersController#show with params {"controller" => "users", "action" => "show", "id" => "8"}
+I, [2025-02-13T18:19:12.186854 #99178]  INFO -- : Completed UsersController#show
+I, [2025-02-13T18:22:06.960935 #99473]  INFO -- : 2025-02-13	2025-02-13 12:52:06 UTC	INFO	Started UsersController#show with params {"controller" => "users", "action" => "show", "id" => "8"}
+I, [2025-02-13T18:22:07.036952 #99473]  INFO -- : Completed UsersController#show
+I, [2025-02-13T18:24:03.399963 #99473]  INFO -- : 2025-02-13	2025-02-13 12:54:03 UTC	INFO	Started UsersController#show with params {"controller" => "users", "action" => "show", "id" => "8"}
+I, [2025-02-13T18:24:03.451724 #99473]  INFO -- : Completed UsersController#show

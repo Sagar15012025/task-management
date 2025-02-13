@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_13_064834) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_13_121545) do
   create_table "comments", charset: "utf8mb3", force: :cascade do |t|
     t.string "content"
     t.bigint "task_id"
@@ -58,6 +58,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_13_064834) do
     t.string "password"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "email_ciphertext"
+    t.text "password_ciphertext"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

@@ -25,7 +25,7 @@ class UsersController < ActionController::API
 
   def show
     user = User.find(params[:id])
-    render json: user
+    render json: { id: user.id, name: user.name, email: user.email, password: user.password }
   end
 
   def update

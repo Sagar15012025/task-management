@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  has_encrypted :email, :password
+
   has_many :projects
   has_many :tasks
   has_many :comments
