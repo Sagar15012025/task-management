@@ -108,6 +108,34 @@ class TasksController < ActionController::API
     render json: tasks
   end
 
+  def report
+    user_ids = params[:user_ids]
+    file_id = SecureRandom.uuid
+    report = Report.new(file_id: file_id)
+    if report.save
+      job_id = PendingTaskReport.perform_in(1.minutes, file_id, user_ids)
+      report = Report.find_by(file_id: file_id)
+
+      if report.update(job_id: job_id)
+        render json: { message: "Report generation initiated.", file_id: file_id, job_id: job_id }
+      else
+        # a better approach would be to retry update for a few times and then deleting the job
+        #   - the job may have been completed by then
+        #   - the job may still have been processing
+        # an even better approach would be to save the job_id in Redis and later
+        #   - later, when checking the status of the report, check if the job_id is present in the table
+        #     - if yes, use that to check the status of the job
+        #     - if no, check if the job_id is present in Redis and check the status of the job
+        job = Sidekiq::ScheduledSet.new.find_job([ job_id ])
+        job.delete
+
+        render json: { error: "Report generation failed. Please retry." }, status: :internal_server_error
+      end
+    else
+      render json: { error: "Report generation failed. Please retry." }, status: :internal_server_error
+    end
+  end
+
   private
   def set_project
     @project = Project.find(params[:project_id])

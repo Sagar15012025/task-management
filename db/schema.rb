@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_06_091924) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_13_064834) do
   create_table "comments", charset: "utf8mb3", force: :cascade do |t|
     t.string "content"
     t.bigint "task_id"
@@ -29,6 +29,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_06_091924) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["assignee_id"], name: "index_projects_on_assignee_id"
+  end
+
+  create_table "reports", charset: "utf8mb3", force: :cascade do |t|
+    t.string "job_id"
+    t.string "file_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.column "status", "enum('pending','processing','completed','failed')", default: "pending", null: false
   end
 
   create_table "tasks", charset: "utf8mb3", force: :cascade do |t|
