@@ -16,16 +16,4 @@ class ReportsController < ActionController::API
       render json: { message: "Report not generated", current_status: status }
     end
   end
-
-  private
-
-  def job_in_progress?(jid)
-    Sidekiq::Queue.all.any? { |queue| queue.any? { |job| job.jid == jid } } ||
-      Sidekiq::Workers.new.any? { |_, _, work| work["payload"]["jid"] == jid }
-  end
-
-  def job_completed?(jid)
-    !job_in_progress?(jid) && !Sidekiq::RetrySet.new.find { |job| job.jid == jid } &&
-      !Sidekiq::DeadSet.new.find { |job| job.jid == jid }
-  end
 end
