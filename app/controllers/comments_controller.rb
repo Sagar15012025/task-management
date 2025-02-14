@@ -1,56 +1,63 @@
 class CommentsController < ActionController::API
+  before_action :get_comment, only: [ :update, :destroy ]
+  before_action :get_task, only: [ :create, :update, :destroy ]
+
   def index
-    comments = Comment.all
-    render json: comments
+    comments = Comment.where(task_id: params[:task_id])
+    render_success(comments)
   end
 
   def create
-    comment = Comment.new(comment_params)
+    comment = @task.comments.new(comment_params)
     if comment.save
-      render json: comment, status: :created
+      render_success(comment, :created)
     else
-      render json: comment.errors.full_messages, status: :unprocessable_entity
-    end
-  end
-
-  def show
-    comment_id = params[:id]
-    if comment = Comment.where(id: comment_id).first
-      render json: comment
-    else
-      render json: { message: "Comment with ID #{comment_id} not found" }, status: :not_found
+      render_error(comment.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def update
-    comment_id = params[:id]
-    if comment = Comment.where(id: comment_id).first
-      if comment.update(comment_params)
-        render json: comment
-      else
-        render json: comment.errors.full_messages, status: :unprocessable_entity
-      end
+    if @comment.update(comment_params)
+      render_success(@comment)
     else
-      render json: { message: "Comment with ID #{comment_id} not found" }, status: :not_found
+      render_error(@comment.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def destroy
-    comment_id = params[:id]
-    if comment = Comment.where(id: comment_id).first
-      comment.destroy
-      if comment.destroyed?
-        render json: { message: "Comment with ID #{comment_id} deleted" }
-      else
-        render json: comment.errors.full_messages, status: :internal_server_error
-      end
+    @comment.destroy
+    if @comment.destroyed?
+      render_success(nil, :ok, "Comment with ID #{@comment.id} deleted")
     else
-      render json: { message: "Comment with ID #{comment_id} not found" }, status: :not_found
+      render_error(@comment.errors.full_messages, :internal_server_error)
     end
   end
 
   private
+
   def comment_params
     params.require(:comment).permit(:content, :task_id, :user_id)
+  end
+
+  def get_task
+    @task = Task.find_by(id: params[:task_id])
+    if not @task
+      render_error({ message: "Task with ID #{params[:id]} not found in project with ID #{params[:project_id]}" }, :not_found)
+    end
+  end
+
+  def get_comment
+    @comment = Comment.find_by(id: params[:id])
+    render json: { message: "Comment with ID #{params[:id]} not found" }, status: :not_found if not @comment
+  end
+
+  def render_success(resource = nil, status = :ok, message = "Success")
+    response = { message: message }
+    response[:data] = resource if resource
+    render json: response, status: status
+  end
+
+  def render_error(errors, status)
+    render json: { errors: errors }, status: status
   end
 end

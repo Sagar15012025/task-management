@@ -1,5 +1,7 @@
 class TasksController < ActionController::API
-  before_action :set_project, only: [ :create, :update ]
+  before_action :validate_project, only: [ :index, :create, :show, :update, :destroy, :status, :overdue ]
+  before_action :get_project, only: [ :create, :update ]
+  before_action :get_task, only: [ :show, :update, :destroy ]
 
   def index
     tasks = Task.where(project_id: params[:project_id])
@@ -9,103 +11,48 @@ class TasksController < ActionController::API
   def create
     task = @project.tasks.new(task_params)
     if task.save
-      render json: task, status: :created
+      render_success(task, :created)
     else
-      render json: task.errors.full_messages, status: :unprocessable_entity
+      render_error(task.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def show
-    task_id = params[:id]
-    project_id = params[:project_id]
-
-    unless Project.exists?(project_id)
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
-      return
-    end
-
-    unless Task.exists?(id: task_id, project_id: project_id)
-      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
-      return
-    end
-
-    task = Task.find(task_id)
-    render json: task
+    render_success(@task)
   end
 
   def update
-    task_id = params[:id]
-    project_id = params[:project_id]
-
-    unless Project.exists?(project_id)
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
-      return
-    end
-
-    unless Task.exists?(id: task_id, project_id: project_id)
-      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
-      return
-    end
-
-    task = Task.where(id: task_id).first
-    if task.update(task_params)
-      render json: task
+    if @task.update(task_params)
+      render_success(@task)
     else
-      render json: task.errors.full_messages, status: :unprocessable_entity
+      render_error(@task.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def destroy
-    task_id = params[:id]
-    project_id = params[:project_id]
-
-    unless Project.exists?(project_id)
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
-      return
-    end
-
-    unless Task.exists?(id: task_id, project_id: project_id)
-      render json: { message: "Task with ID #{task_id} not found in project with ID #{project_id}" }, status: :not_found
-      return
-    end
-
-    task = Task.where(id: task_id).first
-    task.destroy
-    if task.destroyed?
-      render json: { message: "Task with ID #{task_id} deleted" }
+    @task.destroy
+    if @task.destroyed?
+      render_success({ message: "Task with ID #{params[:id]} deleted" })
     else
-      render json: task.errors.full_messages, status: :internal_server_error
+      render_error(@task.errors.full_messages, :internal_server_error)
     end
   end
 
   def status
-    project_id = params[:project_id]
     status = params[:status]
 
-    unless Project.exists?(project_id)
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+    if not %w[pending active completed].include?(status)
+      render_error({ message: "Invalid status value" }, :unprocessable_entity)
       return
     end
 
-    unless [ "pending", "active", "completed" ].include?(status)
-      render json: { message: "Invalid status value" }, status: :unprocessable_entity
-      return
-    end
-
-    tasks = Task.where(project_id: project_id, status: status)
-    render json: tasks
+    tasks = Task.where(project_id: params[:project_id], status: status)
+    render_success(tasks)
   end
 
   def overdue
-    project_id = params[:project_id]
-
-    unless Project.exists?(project_id)
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
-      return
-    end
-
-    tasks = Task.where(project_id: project_id).where("due_date < ?", Date.today)
-    render json: tasks
+    tasks = Task.where(project_id: params[:project_id]).where("due_date < ?", Date.today)
+    render_success(tasks)
   end
 
   def report
@@ -117,31 +64,48 @@ class TasksController < ActionController::API
       report = Report.find_by(file_id: file_id)
 
       if report.update(job_id: job_id)
-        render json: { message: "Report generation initiated.", file_id: file_id, job_id: job_id }
+        render_success({ message: "Report generation initiated.", file_id: file_id, job_id: job_id })
       else
-        # a better approach would be to retry update for a few times and then deleting the job
-        #   - the job may have been completed by then
-        #   - the job may still have been processing
-        # an even better approach would be to save the job_id in Redis and later
-        #   - later, when checking the status of the report, check if the job_id is present in the table
-        #     - if yes, use that to check the status of the job
-        #     - if no, check if the job_id is present in Redis and check the status of the job
         job = Sidekiq::ScheduledSet.new.find_job([ job_id ])
         job.delete
 
-        render json: { error: "Report generation failed. Please retry." }, status: :internal_server_error
+        render_error({ error: "Report generation failed. Please retry." }, :internal_server_error)
       end
     else
-      render json: { error: "Report generation failed. Please retry." }, status: :internal_server_error
+      render_error({ error: "Report generation failed. Please retry." }, :internal_server_error)
     end
   end
 
   private
-  def set_project
+
+  def get_project
     @project = Project.find(params[:project_id])
+  end
+
+  def get_task
+    @task = Task.find_by(id: params[:id], project_id: params[:project_id])
+    if not @task
+      render_error({ message: "Task with ID #{params[:id]} not found in project with ID #{params[:project_id]}" }, :not_found)
+    end
+  end
+
+  def validate_project
+    if not Project.exists?(params[:project_id])
+      render_error({ message: "Project with ID #{params[:project_id]} not found" }, :not_found)
+    end
   end
 
   def task_params
     params.require(:task).permit(:title, :description, :due_date, :project_id, :assignee_id)
+  end
+
+  def render_success(resource = nil, status = :ok, message = "Success")
+    response = { message: message }
+    response[:data] = resource if resource
+    render json: response, status: status
+  end
+
+  def render_error(errors, status)
+    render json: { errors: errors }, status: status
   end
 end

@@ -12,7 +12,7 @@ Rails.application.routes.draw do
         get "status/:status", to: "tasks#status"
         get "overdue", to: "tasks#overdue"
       end
-      resources :comments, only: [ :create, :update, :destroy ]
+      resources :comments, only: [ :index, :create, :update, :destroy ]
     end
   end
   get "tasks/report", to: "tasks#report"

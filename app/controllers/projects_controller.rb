@@ -1,62 +1,68 @@
 class ProjectsController < ActionController::API
+  include CacheHelper
+
+  before_action :get_project, only: [ :show, :update, :destroy ]
+
   def index
-    projects = Project.all
-    render json: projects
+    render_success(Project.all)
   end
 
   def create
     project = Project.new(project_params)
     if project.save
-      render json: project, status: :created
+      fetch_from_cache("project_#{project.id}") { project }
+      render_success(project, :created)
     else
-      render json: project.errors, status: :unprocessable_entity
+      render_error(project.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def show
-    project_id = params[:id]
-    project = Rails.cache.fetch("project_#{project_id}", expires_in: 12.hours) do
-      Project.find(project_id)
-    end
-
-    if project
-      render json: project
-    else
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
-    end
+    render json: @project
   end
 
   def update
-    project_id = params[:id]
-    if project = Project.find(project_id)
-      if project.update(project_params)
-        Rails.cache.delete("project_#{project_id}")
-        render json: project
-      else
-        render json: project.errors.full_messages, status: :unprocessable_entity
-      end
+    if @project.update(project_params)
+      delete_cache("project_#{@project.id}")
+      fetch_from_cache("project_#{@project.id}") { @project }
+      render_success(@project)
     else
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      render_error(@project.errors.full_messages, :unprocessable_entity)
     end
   end
 
   def destroy
-    project_id = params[:id]
-    if project = Project.find(project_id)
-      project.destroy
-      if project.destroyed?
-        Rails.cache.delete("project_#{project_id}")
-        render json: { message: "Project with ID #{project_id} deleted" }
-      else
-        render json: { message: "Project with ID #{project_id} not deleted" }, status: :internal_server_error
-      end
+    @project.destroy
+    if @project.destroyed?
+      delete_cache("project_#{@project.id}")
+      render_success({ message: "Project with ID #{params[:id]} deleted" }, nil, :ok)
     else
-      render json: { message: "Project with ID #{project_id} not found" }, status: :not_found
+      render_error({ message: "Project with ID #{@project.id} not deleted" }, :internal_server_error)
     end
   end
 
   private
+
+  def get_project
+    @project = fetch_from_cache("project_#{params[:id]}") do
+      Project.find_by(id: params[:id])
+    end
+
+    render_error({ message: "Project with ID #{params[:id]} not found" }, :not_found) unless @project
+  end
+
+
   def project_params
     params.require(:project).permit(:name, :description, :assignee_id)
+  end
+
+  def render_success(resource = nil, status = :ok, message = "Success")
+    response = { message: message }
+    response[:data] = resource if resource
+    render json: response, status: status
+  end
+
+  def render_error(errors, status)
+    render json: { errors: errors }, status: status
   end
 end

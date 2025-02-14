@@ -9,7 +9,7 @@ class Task < ApplicationRecord
 
   validates :status, presence: true, inclusion: { in: %w[pending active completed], message: "%{value} is not a valid status" }
   validates :title, length: { minimum: 2 }
-  validates :description, presence: true, length: { maximum: 100 }
+  validates :description, presence: true, length: { maximum: 200 }
 
   validates_associated :project, :assignee
 
