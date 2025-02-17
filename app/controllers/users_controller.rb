@@ -1,6 +1,8 @@
 require "logger"
 
 class UsersController < ActionController::API
+  include ResponseHelper
+
   before_action :log_start
   after_action :log_end
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
@@ -78,15 +80,5 @@ class UsersController < ActionController::API
 
   def user_data(user)
     { id: user.id, name: user.name, email: user.email, password: user.password }
-  end
-
-  def render_success(resource = nil, status = :ok, message = "Success")
-    response = { message: message }
-    response[:data] = resource if resource
-    render json: response, status: status
-  end
-
-  def render_error(errors, status)
-    render json: { errors: errors }, status: status
   end
 end

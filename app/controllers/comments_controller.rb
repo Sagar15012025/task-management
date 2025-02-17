@@ -1,4 +1,6 @@
 class CommentsController < ActionController::API
+  include ResponseHelper
+
   before_action :get_comment, only: [ :update, :destroy ]
   before_action :get_task, only: [ :create, :update, :destroy ]
 
@@ -49,15 +51,5 @@ class CommentsController < ActionController::API
   def get_comment
     @comment = Comment.find_by(id: params[:id])
     render json: { message: "Comment with ID #{params[:id]} not found" }, status: :not_found if not @comment
-  end
-
-  def render_success(resource = nil, status = :ok, message = "Success")
-    response = { message: message }
-    response[:data] = resource if resource
-    render json: response, status: status
-  end
-
-  def render_error(errors, status)
-    render json: { errors: errors }, status: status
   end
 end

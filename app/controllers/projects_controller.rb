@@ -1,5 +1,6 @@
 class ProjectsController < ActionController::API
   include CacheHelper
+  include ResponseHelper
 
   before_action :get_project, only: [ :show, :update, :destroy ]
 
@@ -18,7 +19,7 @@ class ProjectsController < ActionController::API
   end
 
   def show
-    render json: @project
+    render_success(@project)
   end
 
   def update
@@ -54,15 +55,5 @@ class ProjectsController < ActionController::API
 
   def project_params
     params.require(:project).permit(:name, :description, :assignee_id)
-  end
-
-  def render_success(resource = nil, status = :ok, message = "Success")
-    response = { message: message }
-    response[:data] = resource if resource
-    render json: response, status: status
-  end
-
-  def render_error(errors, status)
-    render json: { errors: errors }, status: status
   end
 end

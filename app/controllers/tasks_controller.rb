@@ -1,4 +1,6 @@
 class TasksController < ActionController::API
+  include ResponseHelper
+
   before_action :validate_project, only: [ :index, :create, :show, :update, :destroy, :status, :overdue ]
   before_action :get_project, only: [ :create, :update ]
   before_action :get_task, only: [ :show, :update, :destroy ]
@@ -97,15 +99,5 @@ class TasksController < ActionController::API
 
   def task_params
     params.require(:task).permit(:title, :description, :due_date, :project_id, :assignee_id)
-  end
-
-  def render_success(resource = nil, status = :ok, message = "Success")
-    response = { message: message }
-    response[:data] = resource if resource
-    render json: response, status: status
-  end
-
-  def render_error(errors, status)
-    render json: { errors: errors }, status: status
   end
 end

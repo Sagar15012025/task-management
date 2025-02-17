@@ -1,4 +1,6 @@
 class ReportsController < ActionController::API
+  include ResponseHelper
+
   def status
     report = Report.find_by(file_id: params[:file_id])
 
@@ -16,15 +18,5 @@ class ReportsController < ActionController::API
 
   def report_file_path(file_id)
     "/home/sagar-tagalys/Documents/SampleProjects/task-management/report/pending_tasks_report_#{file_id}.csv"
-  end
-
-  def render_success(resource = nil, status = :ok, message = "Success")
-    response = { message: message }
-    response[:data] = resource if resource
-    render json: response, status: status
-  end
-
-  def render_error(errors, status)
-    render json: { errors: errors }, status: status
   end
 end
